@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>发票报销信息整理</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}"/>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧾</div>
+  <div>
+    <h1>发票报销信息整理</h1>
+    <p>上传电子发票 PDF · 自动提取信息 · 筛选管理 · 导出 CSV / Excel</p>
+  </div>
+</header>
+
+<main>
+  <!-- 上传区 -->
+  <div class="card">
+    <div class="card-hd"><h2>📁 上传发票文件</h2></div>
+    <div class="card-bd">
+      <div class="dz" id="dropzone">
+        <input type="file" id="file-input" accept=".pdf" multiple/>
+        <div class="dz-icon">📄</div>
+        <div class="dz-hint"><span>点击选择</span> 或将 PDF 文件拖拽至此</div>
+        <div class="dz-sub">支持批量上传 · 仅限电子发票（普通发票）PDF · 最大 100 MB</div>
+      </div>
+      <div id="file-list"></div>
+      <div class="action-bar">
+        <button class="btn btn-blue" id="btn-parse" disabled>🔍 开始解析</button>
+        <button class="btn btn-green" id="btn-dl-csv" disabled>⬇ 导出 CSV</button>
+        <button class="btn btn-teal" id="btn-dl-excel" disabled>📊 导出 Excel</button>
+        <button class="btn btn-ghost" id="btn-clear">🗑 清空</button>
+        <span id="status-msg"></span>
+      </div>
+      <div id="prog-wrap">
+        <div class="pb-bg"><div class="pb-fill" id="pb-fill"></div></div>
+        <div id="prog-text">正在解析...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 汇总卡片 -->
+  <div class="summary-row" id="summary-row" style="display:none">
+    <div class="sc blue">
+      <div class="val" id="s-count">0</div>
+      <div class="lbl">发票总数</div>
+    </div>
+    <div class="sc purple">
+      <div class="val" id="s-total">¥0</div>
+      <div class="lbl">价税合计</div>
+    </div>
+    <div class="sc teal">
+      <div class="val" id="s-amount">¥0</div>
+      <div class="lbl">金额合计</div>
+    </div>
+    <div class="sc green">
+      <div class="val" id="s-tax">¥0</div>
+      <div class="lbl">税额合计</div>
+    </div>
+    <div class="sc orange">
+      <div class="val" id="s-pending">¥0</div>
+      <div class="lbl">待报销</div>
+    </div>
+    <div class="sc green">
+      <div class="val" id="s-done">¥0</div>
+      <div class="lbl">已报销</div>
+    </div>
+  </div>
+
+  <!-- 图表 -->
+  <div id="chart-sec">
+    <div class="cg">
+      <div class="cc"><h3>📊 金额 vs 税额</h3><div class="cw"><canvas id="c-amount"></canvas></div></div>
+      <div class="cc"><h3>🔵 价税合计对比</h3><div class="cw"><canvas id="c-total"></canvas></div></div>
+      <div class="cc"><h3>🏷️ 项目类别分布</h3><div class="cw"><canvas id="c-cat"></canvas></div></div>
+      <div class="cc"><h3>🏢 销售方统计</h3><div class="cw"><canvas id="c-seller"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- 结果表格 -->
+  <div class="card" id="result-card" style="display:none">
+    <div class="card-hd">
+      <h2>📋 发票明细</h2>
+      <span id="row-count" style="font-size:13px;color:var(--muted)"></span>
+    </div>
+    <div class="search-bar" id="search-bar">
+      <span class="search-label">搜索:</span>
+      <input type="text" id="search-input" placeholder="输入关键词搜索..."/>
+      <span class="search-label">类别:</span>
+      <select class="fsel" id="f-cat"><option value="">全部类别</option></select>
+      <span class="search-label">状态:</span>
+      <select class="fsel" id="f-reimb">
+        <option value="">全部状态</option>
+        <option value="pending">未报销</option>
+        <option value="done">已报销</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead id="t-head"></thead><tbody id="t-body"></tbody></table>
+    </div>
+    <div class="tbl-foot">
+      <span id="f-count"></span>
+      <span id="f-sum"></span>
+    </div>
+  </div>
+</main>
+
+<!-- 详情弹窗 -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mo-hd"><h3 id="mo-title">发票详情</h3><button class="mo-close" id="mo-close">✕</button></div>
+    <div class="mo-bd" id="mo-body"></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+
